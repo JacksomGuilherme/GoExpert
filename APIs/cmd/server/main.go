@@ -28,6 +28,9 @@ func main() {
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.WithValue("jwt", config.TokenAuth))
+	r.Use(middleware.WithValue("JwtExpiresIn", config.JWTExpiresIn))
 
 	/* ========== PRODUCT ENDPOINTS ========== */
 	productDB := database.NewProductRepository(db)
@@ -46,7 +49,7 @@ func main() {
 
 	/* =========== USER ENDPOINTS =========== */
 	userDB := database.NewUserRepository(db)
-	userHandler := handlers.NewUserHandler(userDB, config.TokenAuth, config.JWTExpiresIn)
+	userHandler := handlers.NewUserHandler(userDB)
 
 	r.Post("/users", userHandler.CreateUser)
 	r.Post("/users/generate_token", userHandler.GetJWT)
