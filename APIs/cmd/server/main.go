@@ -10,6 +10,7 @@ import (
 	"github.com/JacksomGuilherme/GoExpert/APIs/internal/entity/infra/webserver/handlers"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/jwtauth"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -25,17 +26,31 @@ func main() {
 	}
 	db.AutoMigrate(&entity.Product{}, &entity.User{})
 
-	productDB := database.NewProductRepository(db)
-	productHandler := handlers.NewProductHandler(productDB)
-
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	r.Post("/products", productHandler.CreateProduct)
-	r.Get("/products", productHandler.GetProducts)
-	r.Get("/products/{id}", productHandler.GetProduct)
-	r.Put("/products/{id}", productHandler.UpdateProduct)
-	r.Delete("/products/{id}", productHandler.DeleteProduct)
+	/* ========== PRODUCT ENDPOINTS ========== */
+	productDB := database.NewProductRepository(db)
+	productHandler := handlers.NewProductHandler(productDB)
+
+	r.Route("/products", func(r chi.Router) {
+		r.Use(jwtauth.Verifier(config.TokenAuth))
+		r.Use(jwtauth.Authenticator)
+		r.Post("/", productHandler.CreateProduct)
+		r.Get("/", productHandler.GetProducts)
+		r.Get("/{id}", productHandler.GetProduct)
+		r.Put("/{id}", productHandler.UpdateProduct)
+		r.Delete("/{id}", productHandler.DeleteProduct)
+	})
+	/* ======================================= */
+
+	/* =========== USER ENDPOINTS =========== */
+	userDB := database.NewUserRepository(db)
+	userHandler := handlers.NewUserHandler(userDB, config.TokenAuth, config.JWTExpiresIn)
+
+	r.Post("/users", userHandler.CreateUser)
+	r.Post("/users/generate_token", userHandler.GetJWT)
+	/* ====================================== */
 
 	http.ListenAndServe(":8080", r)
 }
