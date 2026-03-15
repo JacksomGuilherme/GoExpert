@@ -5,16 +5,34 @@ import (
 	"net/http"
 
 	"github.com/JacksomGuilherme/GoExpert/APIs/configs"
+	_ "github.com/JacksomGuilherme/GoExpert/APIs/docs"
 	"github.com/JacksomGuilherme/GoExpert/APIs/internal/entity"
-	"github.com/JacksomGuilherme/GoExpert/APIs/internal/entity/infra/database"
-	"github.com/JacksomGuilherme/GoExpert/APIs/internal/entity/infra/webserver/handlers"
+	"github.com/JacksomGuilherme/GoExpert/APIs/internal/infra/database"
+	"github.com/JacksomGuilherme/GoExpert/APIs/internal/infra/webserver/handlers"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/jwtauth"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
+// @title           Go Expert API Example
+// @version         1.0
+// @description     Product API with authentication.
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   Jacksom Guilherme
+// @contact.url    https://www.github.com/JacksomGuilherme
+
+// @license.name  Full Cycle License
+// @license.url   http://www.fullcycle.com.br
+
+// @host      localhost:8080
+// @BasePath  /
+// @securityDefinitions.apiKey  ApiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 	config := configs.LoadConfig(".")
 
@@ -55,5 +73,6 @@ func main() {
 	r.Post("/users/generate_token", userHandler.GetJWT)
 	/* ====================================== */
 
+	r.Get("/docs/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8080/docs/doc.json")))
 	http.ListenAndServe(":8080", r)
 }
