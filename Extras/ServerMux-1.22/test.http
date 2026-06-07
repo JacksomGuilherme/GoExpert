@@ -1,0 +1,13 @@
+GET http://localhost:8080/books/2
+###
+
+POST http://localhost:8080/books/1
+
+###
+GET http://localhost:8080/books/dir/djdjdjd/aa/add/dddre/gfgf
+
+###
+GET http://localhost:8080/books/aaaa
+
+###
+GET http://localhost:8080/books/precedence/xxx
